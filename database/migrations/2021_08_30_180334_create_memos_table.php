@@ -14,8 +14,12 @@ class CreateMemosTable extends Migration
     public function up()
     {
         Schema::create('memos', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->bigIncrements("id");
+            $table->longText("content");
+            $table->integer("user_id");
+            $table->integer("status")->default("1");
+            $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP'));
+            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
         });
     }
 
