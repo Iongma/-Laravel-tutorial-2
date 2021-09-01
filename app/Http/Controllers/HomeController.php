@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Memo;
 
 class HomeController extends Controller
 {
@@ -23,11 +24,21 @@ class HomeController extends Controller
      */
     public function index()
     {
+        $user = \Auth::user();
+        $memos = Memo::where('user_id', $user['id'])->where('status', 1)->orderBy('updated_at', 'DESC')->get();
         return view('home');
     }
 
     public function create()
     {
-        return view('create');
+        $user = \Auth::user();
+        return view('create', compact('user'));
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->all();
+        $memo_id = Memo::insertGetId(['content' => $data['content'], 'user_id' => $data['user_id'], 'status' => 1]);
+        return redirect()->route('home');
     }
 }
