@@ -26,19 +26,39 @@ class HomeController extends Controller
     {
         $user = \Auth::user();
         $memos = Memo::where('user_id', $user['id'])->where('status', 1)->orderBy('updated_at', 'DESC')->get();
-        return view('home');
+        return view('home', compact('user', 'memos'));
     }
 
     public function create()
     {
         $user = \Auth::user();
-        return view('create', compact('user'));
+        $memos = Memo::where('user_id', $user['id'])->where('status', 1)->orderBy('updated_at', 'DESC')->get();
+        return view('create', compact('user', 'memos'));
     }
 
     public function store(Request $request)
     {
         $data = $request->all();
+        dd($data);
         $memo_id = Memo::insertGetId(['content' => $data['content'], 'user_id' => $data['user_id'], 'status' => 1]);
+        return redirect()->route('home');
+    }
+
+    public function edit($id)
+    {
+        $user = \Auth::user();
+        $memo = Memo::where('status', 1)->where('id', $id)->where('user_id', $user['id'])->first();
+        // dd($memo);
+        // $tags = Tag::where('user_id', $user['id'])->get();
+        $memos = Memo::where('user_id', $user['id'])->where('status', 1)->orderBy('updated_at', 'DESC')->get();
+        return view('edit', compact('memo', 'user', 'memos'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $inputs = $request->all();
+
+        Memo::where('id', $id)->update(['content' => $inputs['content']]);
         return redirect()->route('home');
     }
 }
