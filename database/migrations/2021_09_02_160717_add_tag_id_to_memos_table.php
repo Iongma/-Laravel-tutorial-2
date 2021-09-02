@@ -14,7 +14,7 @@ class AddTagIdToMemosTable extends Migration
     public function up()
     {
         Schema::table('memos', function (Blueprint $table) {
-            //
+            $table->bigInteger('tag_id')->nullable()->after('user_id');
         });
     }
 
@@ -26,7 +26,7 @@ class AddTagIdToMemosTable extends Migration
     public function down()
     {
         Schema::table('memos', function (Blueprint $table) {
-            //
+            $table->dropColumn('tag_id');
         });
     }
 }
