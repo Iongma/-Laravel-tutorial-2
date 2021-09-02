@@ -40,17 +40,19 @@ class HomeController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        $tag_id = Tag::insertGetId([
-            'name' => $data['tag'],
-            'user_id' => $data['user_id'],
-            'status' => 1
-        ]);
 
+        // 重複タグの確認
+        $exist_tag = Tag::where('name', $data['tag'])->where('user_id', $data['user_id'])->first();
+        if (empty($exist_tag['id'])) {
+            $tag_id = Tag::insertGetId(['name' => $data['tag'], 'user_id' => $data['user_id']]);
+        } else {
+            $tag_id = $exist_tag['id'];
+        }
         $memo_id = Memo::insertGetId([
             'content' => $data['content'],
             'user_id' => $data['user_id'],
-            'status' => 1,
-            'tag_id' => $tag_id
+            'tag_id' => $tag_id,
+            'status' => 1
         ]);
         return redirect()->route('home');
     }
@@ -59,17 +61,23 @@ class HomeController extends Controller
     {
         $user = \Auth::user();
         $memo = Memo::where('status', 1)->where('id', $id)->where('user_id', $user['id'])->first();
-        // dd($memo);
-        // $tags = Tag::where('user_id', $user['id'])->get();
+        $tags = Tag::where('user_id', $user['id'])->get();
         $memos = Memo::where('user_id', $user['id'])->where('status', 1)->orderBy('updated_at', 'DESC')->get();
-        return view('edit', compact('memo', 'user', 'memos'));
+        return view('edit', compact('memo', 'user', 'memos', 'tags'));
     }
 
     public function update(Request $request, $id)
     {
         $inputs = $request->all();
 
-        Memo::where('id', $id)->update(['content' => $inputs['content']]);
+        Memo::where('id', $id)->update(['content' => $inputs['content'], 'tag_id' => $inputs['tag_id']]);
+        return redirect()->route('home');
+    }
+    public function delete(Request $request, $id)
+    {
+        $inputs = $request->all();
+
+        Memo::where('id', $id)->update(['status', 2]);
         return redirect()->route('home');
     }
 }
